@@ -78,12 +78,28 @@ str(h_Calories)
 h_Calories_2 <- h_Calories %>% 
   mutate(ActivityHour = mdy_hms(ActivityHour),
          time=as_hms(ActivityHour),
-         date=as_date(ActivityHour)) %>% 
-  mutate(Id = factor(Id)) # formateamos el id como factor y la fecha en multiples columnas
+         date=as_date(ActivityHour),
+         wday=wday(ActivityHour)) %>% 
+  mutate(Id = factor(Id),wday=factor(wday),wday=recode(wday,
+                                                       "1" = "Domingo",
+                                                       "2" = "Lunes",
+                                                       "3" = "Martes",
+                                                       "4" = "Miercoles",
+                                                       "5" = "Jueves",
+                                                       "6" = "Viernes",
+                                                       "7" = "Sabado"))
+
+# formateamos el id como factor y la fecha en multiples columnas
 
 h_Calories_2 <- h_Calories_2 %>% 
   select(Id, Calories, time, date) %>% 
-  arrange(time)
+  arrange(date) #seleccionamos los datos de interés y ordenamos el set por fecha
 
-str(h_Calories_2) #vericamos la estructura del set
+h_Calories_2 <- h_Calories_2 %>% 
+  rename(Calorias=Calories,Hora=time,Fecha=date)
 
+#Graficamos el consumo calórico de los usuarios a lo largo de las horas
+
+ggplot(h_Calories_2, aes(x=Hora,y=Calorias,group=Id,color=Id)) +
+  geom_line(show.legend = FALSE) +
+  theme(axis.text.x = element_text(angle=45,vjust=0.5,hjust=0.5))
