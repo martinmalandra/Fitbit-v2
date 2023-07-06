@@ -3,7 +3,7 @@
     "path": "D:/ANÁLISIS DE DATOS/Cyclistics v2/cyclistics-v2.R",
     "project_path": "cyclistics-v2.R",
     "type": "r_source",
-    "hash": "2489142581",
+    "hash": "0",
     "contents": "",
     "dirty": false,
     "created": 1688659696918.0,
@@ -13,15 +13,15 @@
         "tempName": "Untitled1",
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "116,0",
-        "scrollLine": "89"
+        "cursorPosition": "141,0",
+        "scrollLine": "115"
     },
     "folds": "",
-    "lastKnownWriteTime": 1688676771,
+    "lastKnownWriteTime": 1688679927,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1688676771867,
+    "last_content_update": 1688679927443,
     "read_only": false,
     "read_only_alternatives": []
 }
