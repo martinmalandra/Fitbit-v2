@@ -72,10 +72,10 @@ ggplot(d_Activity_lite,aes(x=Fecha,y=Distancia,group=Id,color=Id)) +
 read.csv("hourlyCalories_merged.csv")
 str(read.csv("hourlyCalories_merged.csv")) #encontramos la misma limitación. los Ids se encuentran en formato numero y las fechas como chr
 
-h_Calories <- read.csv("hourlyCalories_merged.csv") #cargamos la variable en el entorno de R
-str(h_Calories)
+Calorias_H_D <- read.csv("hourlyCalories_merged.csv") #cargamos la variable en el entorno de R
+str(Calorias_H_D)
 
-h_Calories_2 <- h_Calories %>% 
+Calorias_H_D <- Calorias_H_D %>% 
   mutate(ActivityHour = mdy_hms(ActivityHour),
          time=as_hms(ActivityHour),
          date=as_date(ActivityHour),
@@ -91,15 +91,27 @@ h_Calories_2 <- h_Calories %>%
 
 # formateamos el id como factor y la fecha en multiples columnas
 
-h_Calories_2 <- h_Calories_2 %>% 
-  select(Id, Calories, time, date) %>% 
-  arrange(date) #seleccionamos los datos de interés y ordenamos el set por fecha
 
-h_Calories_2 <- h_Calories_2 %>% 
-  rename(Calorias=Calories,Hora=time,Fecha=date)
+Calorias_H <- Calorias_H_D %>% 
+  select(Id, Calories, time) #seleccionamos los datos para obtener consumo calorico versus hora.
 
-#Graficamos el consumo calórico de los usuarios a lo largo de las horas
+Calorias_H <- Calorias_H %>% 
+  rename(Calorias=Calories,Hora=time) #renombramos las columnas en castellano
 
-ggplot(h_Calories_2, aes(x=Hora,y=Calorias,group=Id,color=Id)) +
-  geom_line(show.legend = FALSE) +
-  theme(axis.text.x = element_text(angle=45,vjust=0.5,hjust=0.5))
+Calorias_D <- Calorias_H_D %>% 
+  select(Id, Calories, wday) %>% 
+  arrange(wday) #seleccionamos los datos para analizar consumo calórico versus día de la semana
+
+Calorias_D <- Calorias_D %>% 
+  rename(Calorias = Calories, Dia_semana=wday) #renombramos las columnas en castellano
+
+
+#en el siguiente comando obtenemos la suma de todas aquellas quemas calóricas que se dieron a la misma hora
+
+Calorias_H_lite <- aggregate(Calorias_H$Calorias, by=list(Hora=Calorias_H$Hora), FUN=sum)
+
+#luego hacemos algo similar para las quemas calóricas que ocurrieron el mismo día de la semana
+
+Calorías_D_lite <- aggregate(Calorias_D$Calorias, by=list(Dia_de_la_semana=Calorias_D$Dia_semana), FUN=sum)
+
+
