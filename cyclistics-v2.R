@@ -6,6 +6,7 @@ install.packages("hms")
 library(tidyverse)
 library(lubridate)
 library(hms)
+library(RColorBrewer)
 
 #PRIMER DATASET: dailyActivity_merged.csv
 
@@ -71,6 +72,14 @@ ggplot(Actividad_D_lite,aes(x=Fecha,y=Distancia,group=Id,color=Id)) +
   labs(title="Distancia caminada por cada usuario individual a lo largo de un mes de uso")
 
 
+#graficamos la relación entre consumo calórico y distancia caminada
+
+ggplot(Actividad_D_lite,aes(x=Distancia,y=Calorias)) +
+  geom_point(aes(color = Calorias)) +
+  scale_color_viridis_c(option = "inferno") +
+  geom_smooth(method = lm)
+
+
 
 #SEGUNDO DATASET: hourlyCalories_merged.csv
 
@@ -129,14 +138,17 @@ Calorias_D_lite <- aggregate(Calorias_D$Calorias, by=list(Dia_de_la_semana=Calor
 Calorias_D_lite <- Calorias_D_lite %>% 
   rename(Calorias_totales=x)
 
-
 #GRAFICAS
 
 #grafica del consumo calórico versus hora del día
-ggplot(Calorias_H_lite,aes(x=Hora,y=Calorias_totales,fill=Calorias_totales,color=Hora)) +
+ggplot(Calorias_H_lite,aes(x=Hora,y=Calorias_totales,fill=Calorias_totales)) +
   geom_bar(stat = "identity", show.legend = FALSE) +
-  labs(title = "Consumo calórico a lo largo del día") +
-  scale_fill_gradient(low = "blue",high="red")
+  labs(title = "Consumo calórico de los usuarios a lo largo del día") +
+  scale_fill_gradient(low = "yellow",high="red")
 
 
 #grafica del consumo calórico versus día de la semana
+ggplot(Calorias_D_lite,aes(x=Dia_de_la_semana,y=Calorias_totales,fill=Calorias_totales)) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  labs(title = "Consumo calórico de los usuarios a lo largo de la semana") +
+  scale_fill_gradient(low = "yellow",high="red")
