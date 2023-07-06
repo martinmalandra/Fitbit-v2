@@ -1,0 +1,45 @@
+---
+title: ""
+author: ""
+date: ""
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introducción
+
+El siguiente es un caso de estudio extraído del Programa de Análisis de Datos de Google, realizado sobre Bellabeat, una empresa ficticia de gadgets de salud focalizada en mujeres.
+
+Los datos utilizados son de acceso público y pueden consultarse en el siguiente [enlace](https://divvy-tripdata.s3.amazonaws.com/index.html).
+
+Dichos archivos, junto con todo el presente código y documentación respectiva también se encuentran disponibles en el [repositorio de Github](https://github.com/martinmalandra/Cyclistics-v2) de este proyecto.
+
+# Presentación del caso - Cyclistic
+
+Urška Sršen y Sando Mur fundaron Bellabeat, una empresa de alta tecnología que fabrica productos inteligentes centrados en la salud. Sršen aprovechó su formación como artista para desarrollar tecnología de diseño atractivo que informa e inspira a mujeres de todo el mundo. La recopilación de datos sobre actividad, sueño, estrés y salud reproductiva ha permitido a Bellabeat dotar a las mujeres de conocimientos sobre su propia salud y sus hábitos. Desde su fundación en 2013, Bellabeat ha crecido rápidamente y se ha posicionado rápidamente como una empresa de bienestar impulsada por la tecnología para las mujeres.
+
+En 2016, Bellabeat había abierto oficinas en todo el mundo y lanzado múltiples productos. Los productos de Bellabeat pasaron a estar disponibles a través de un número creciente de minoristas en línea, además de su propio canal de comercio electrónico en su sitio web. La empresa ha invertido en medios publicitarios tradicionales, como radio, vallas publicitarias exteriores, prensa y televisión, pero se centra ampliamente en el marketing digital. Bellabeat invierte durante todo el año en la búsqueda de Google, mantiene activas sus páginas de Facebook e Instagram e interactúa constantemente con los consumidores en Twitter. Además, Bellabeat publica anuncios de vídeo en Youtube y anuncios en la Red de Display de Google para apoyar campañas en fechas clave de marketing. Sršen sabe que un análisis de los datos de consumo disponibles de Bellabeat revelaría más oportunidades de crecimiento. Ha pedido al equipo de análisis de marketing que se centre en un producto de Bellabeat y analice los datos de uso de los dispositivos inteligentes para saber cómo los utilizan los usuarios. A partir de esta información, le gustaría recibir recomendaciones de alto nivel sobre cómo estas tendencias pueden influir en la estrategia de marketing de Bellabeat.
+
+## Escenario de análisis
+
+Sršen está interesada en analizar los datos de uso de los dispositivos inteligentes para comprender mejor cómo utilizan los consumidores los dispositivos inteligentes que no son de Bellabeat. A continuación, solicitará seleccionar un producto Bellabeat al que aplicar estos conocimientos en la presentación. Las preguntas que guian este análisis:
+
+-   ¿Cuáles son algunas tendencias en el uso de dispositivos smart?
+-   ¿Cómo se podrían aplicar estas tendencias a los usuarios de Bellabeat?
+-   ¿Cómo podrían estas tendencias ayudar a influenciar la estrategia de Marketing de Bellabeat?
+
+# Business task
+
+Se identifica entonces la tarea clave para el análisis: identificar tendencias en los sets de datos producido por un dispositivo de la marca sobre el cual entender mejor los hábitos y necesidades por parte de los usuarios y generar posibles estrategias de marketing.
+
+# Datos a emplear
+
+Se dispone de un set de archivos CSV de uso público, disponibles en el siguiente [link](https://www.kaggle.com/datasets/arashnic/fitbit).
+
+Se procede entonces a descargar y organizar los datos de manera local.
+
+Los archivos proporcionados contienen información de dominio público sobre 30 usuarios de Fitbit que cumplían los requisitos y dieron su consentimiento para el envío de los datos de su rastreador personal, incluidos los resultados a nivel de minuto de la actividad física, la frecuencia cardiaca y la monitorización del sueño. Incluye información sobre la actividad diaria, los pasos y la frecuencia cardíaca que puede utilizarse para explorar los hábitos de los usuarios.
+
