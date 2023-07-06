@@ -21,3 +21,5 @@ d_Activity <- d_Activity %>%
 d_Activity <- d_Activity %>% 
   mutate(Id = factor(Id)) #Cambiamos el formato de la variable Id a factor para categorizar los identificadores de los usuarios
   str(d_Activity) # corroboramos la estructura del set de datos
+  
+d_Activity_lite <- 
