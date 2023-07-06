@@ -5,7 +5,6 @@ install.packages("lubridate")
 library(tidyverse)
 library(lubridate)
 
-
 #Primer dataset: dailyActivity_merged.csv
 
 read.csv("dailyActivity_merged.csv")
@@ -22,4 +21,11 @@ d_Activity <- d_Activity %>%
   mutate(Id = factor(Id)) #Cambiamos el formato de la variable Id a factor para categorizar los identificadores de los usuarios
   str(d_Activity) # corroboramos la estructura del set de datos
   
-d_Activity_lite <- 
+d_Activity_lite <- d_Activity %>% 
+  select(Id, ActivityDate, TotalDistance, Calories) #hacemos un data frame reducido a partir de lo anterior
+
+d_Activity_lite <- d_Activity_lite %>% 
+  rename(Fecha = ActivityDate, Distancia = TotalDistance, Calorias = Calories) %>% 
+
+d_Activity_lite <- d_Activity_lite %>% 
+  arrange(Id,Fecha)
