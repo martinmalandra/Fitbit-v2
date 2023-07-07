@@ -174,3 +174,43 @@ Pasos_H_D <- Pasos_H_D %>%
                                                        "6" = "Viernes",
                                                        "7" = "Sabado"))
 str(Pasos_H_D)
+
+
+#Seleccionando y renombrando
+
+Pasos_H <- Pasos_H_D %>% 
+  select(Id, StepTotal, time)
+
+Pasos_H <- Pasos_H %>% 
+  rename(Pasos=StepTotal,Hora=time)
+
+Pasos_D <- Pasos_H_D %>% 
+  select(Id, StepTotal, wday) %>% 
+  arrange(wday)
+
+Pasos_D <- Pasos_D %>% 
+  rename(Pasos = StepTotal, Dia_semana=wday)
+
+
+#Agrupando
+Pasos_H_comb <- aggregate(Pasos_H$Pasos, by=list(Hora=Pasos_H$Hora), FUN=sum)
+
+Pasos_D_comb <- aggregate(Pasos_D$Pasos, by=list(Hora=Pasos_D$Dia_semana), FUN=sum)
+
+
+Pasos_H_comb <- Pasos_H_comb %>% 
+  rename(Pasos_totales=x)
+
+Pasos_D_comb <- Pasos_D_comb %>% 
+  rename(Pasos_totales=x)
+
+#graficas
+ggplot(Pasos_H_comb,aes(x=Hora,y=Pasos_totales,fill=Pasos_totales)) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  labs(title = "Pasos caminados por los usuarios a lo largo del día") +
+  scale_fill_gradient(low = "yellow",high="darkgreen")
+
+ggplot(Pasos_D_comb,aes(x=Hora,y=Pasos_totales,fill=Pasos_totales)) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  labs(title = "Pasos caminados por los usuarios a lo largo de la semana") +
+  scale_fill_gradient(low = "yellow",high="darkgreen")
