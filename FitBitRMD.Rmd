@@ -17,7 +17,7 @@ Los datos utilizados son de acceso público y pueden consultarse en el siguiente
 
 Dichos archivos, junto con todo el presente código y documentación respectiva también se encuentran disponibles en el [repositorio de Github](https://github.com/martinmalandra/Cyclistics-v2) de este proyecto.
 
-# Presentación del caso - Cyclistic
+# Presentación del caso - Bellabeat
 
 Urška Sršen y Sando Mur fundaron Bellabeat, una empresa de alta tecnología que fabrica productos inteligentes centrados en la salud. Sršen aprovechó su formación como artista para desarrollar tecnología de diseño atractivo que informa e inspira a mujeres de todo el mundo. La recopilación de datos sobre actividad, sueño, estrés y salud reproductiva ha permitido a Bellabeat dotar a las mujeres de conocimientos sobre su propia salud y sus hábitos. Desde su fundación en 2013, Bellabeat ha crecido rápidamente y se ha posicionado rápidamente como una empresa de bienestar impulsada por la tecnología para las mujeres.
 
@@ -296,7 +296,7 @@ Calorias_D <- Calorias_H_D %>%
   arrange(wday)
 ```
 
-```{r Renombramos las columnas en castellano}
+```{r Renombramos en español}
 Calorias_D <- Calorias_D %>% 
   rename(Calorias = Calories, Dia_semana=wday)
 ```
@@ -368,7 +368,7 @@ str(read.csv("hourlySteps_merged.csv"))
 
 Haremos el mismo proceso de formateo que en el paso B.
 
-```{r Cargamos los datos en una variable}
+```{r Cargamos los datos en otra variable}
 Pasos_H_D <- read.csv("hourlySteps_merged.csv")
 str(Pasos_H_D)
 
@@ -394,7 +394,7 @@ Pasos_H <- Pasos_H_D %>%
   select(Id, StepTotal, time)
 ```
 
-```{r Renombramos las variables en castellano}
+```{r Renombrando en castellano}
 Pasos_H <- Pasos_H %>% 
   rename(Pasos=StepTotal,Hora=time)
 ```
@@ -405,7 +405,7 @@ Pasos_D <- Pasos_H_D %>%
   arrange(wday)
 ```
 
-```{r Renombramos las columnas en castellano}
+```{r Renombramos como anteriormente}
 Pasos_D <- Pasos_D %>% 
   rename(Pasos = StepTotal, Dia_semana=wday)
 ```
@@ -436,14 +436,14 @@ Pasos_D_comb <- Pasos_D_comb %>%
 
 Por último, visualizamos:
 
-```{r Pasos versus hora del día}
+```{r Pasos contra hora del día}
 ggplot(Pasos_H_comb,aes(x=Hora,y=Pasos_totales,fill=Pasos_totales)) +
   geom_bar(stat = "identity", show.legend = FALSE) +
   labs(title = "Pasos caminados por los usuarios a lo largo del día") +
   scale_fill_gradient(low = "yellow",high="darkgreen")
 ```
 
-```{r Pasos versus día de la semana}
+```{r Pasos contra día de la semana}
 ggplot(Pasos_D_comb,aes(x=Hora,y=Pasos_totales,fill=Pasos_totales)) +
   geom_bar(stat = "identity", show.legend = FALSE) +
   labs(title = "Pasos caminados por los usuarios a lo largo de la semana") +
