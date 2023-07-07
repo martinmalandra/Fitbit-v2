@@ -43,3 +43,442 @@ Se procede entonces a descargar y organizar los datos de manera local.
 
 Los archivos proporcionados contienen información de dominio público sobre 30 usuarios de Fitbit que cumplían los requisitos y dieron su consentimiento para el envío de los datos de su rastreador personal, incluidos los resultados a nivel de minuto de la actividad física, la frecuencia cardiaca y la monitorización del sueño. Incluye información sobre la actividad diaria, los pasos y la frecuencia cardíaca que puede utilizarse para explorar los hábitos de los usuarios.
 
+## Preparación de entorno y herramientas utilizadas
+
+Para el siguiente proceso, utilizaremos R Studio IDE, en conjunto con los siguientes paquetes:
+
+* Tidyverse
+* Lubridate
+* Hms
+
+```{r Cargamos las librerías}
+library(tidyverse)
+library(lubridate)
+library(hms)
+```
+
+## 1. Exploración de los archivos y los datos
+
+Identificamos seis variables en los datos, presentadas en diferentes frecuencias:
+
+Disponibles en unidad días se encuentran:
+
+-   Actividad
+-   Calorías
+-   Intensidades
+-   Pasos
+-   Sueño
+
+Disponibles en unidad horas se encuentran:
+
+-   Calorías
+-   Intensidades
+-   Pasos
+
+Disponibles en unidad minutos se encuentran:
+
+-   Calorías
+-   Intensidades (en formato angosto y ancho, es decir con trasposición de filas y columnas)
+-   Pasos (ancho y angosto)
+-   MET (equivalente metabólico de tarea o por sus siglas en inglés, metabolic equivalent of task)
+
+Disponible en unidad segundos se encuentra:
+
+-   Pulso cardíaco
+
+Y por último, sin unidad relativa, se encuentra el registro de peso.
+
+Para el siguiente análisis, elegimos trabajar con los estos sets de datos:
+
+* Por un lado, usaremos los datos condensados en un set llamado 'dailyActivity_merged.csv' sobre el cual identificaremos las tendencias de uso de los usuarios, observando como varían el consumo calórico y la distancia a lo largo del mes observado, y si estas se encuentran relacionadas entre sí.
+
+* Por el otro, veremos la actividad física de los usuarios a lo largo de la semana y a lo largo de un mismo día, para identificar cuales son los momentos de mayor actividad física a lo largo de un día y de una semana de uso.
+
+### A. Primer set de datos: datos condensados
+
+#### 1. Orden y limpieza
+
+Daremos un vistazo al archivo csv correspondiente con:
+```{r}
+glimpse(read.csv("dailyActivity_merged.csv"))
+```
+
+En primera instancia notamos dos limitaciones importantes: las fechas se encuentran formateadas como caracteres de manera ambigua siguiendo el esquema 'mes/día/año'. A su vez, los Identificadores de usuario (Id) están formateados como números, cuando es ideal tenerlos como variables categóricas, es decir, factor.
+
+Antes de llegar al proceso de formato, cargaremos nuestro set de datos en una variable de entorno.
+
+```{r}
+Actividad_D <- read.csv("dailyActivity_merged.csv")
+```
+
+```{r Corroborando la estructura del set de datos creado}
+str(Actividad_D)
+```
+
+Procedemos a formatear la variable ActivityDate como fecha:
+
+```{r}
+Actividad_D <- Actividad_D %>% 
+  mutate(ActivityDate = mdy(ActivityDate))
+```
+
+Luego formateamos el Id como variable categórica (Factor)
+
+```{r}
+Actividad_D <- Actividad_D %>% 
+  mutate(Id = factor(Id))
+```
+
+```{r Corroborando la estructura del set de datos modificado}
+str(Actividad_D)
+```
+
+Ahora creamos un data frame reducido a partir de los datos anteriores, buscando cotejar la información que nos interesa para el análisis.
+
+```{r}
+  Actividad_D_lite <- Actividad_D %>% 
+  select(Id, ActivityDate, TotalDistance, Calories)
+```
+
+Posteriormente renombramos las variables en castellano para una mejor lectura de tabla.
+
+```{r}
+Actividad_D_lite <- Actividad_D_lite %>% 
+  rename(Fecha = ActivityDate, Distancia = TotalDistance, Calorias = Calories)
+```
+
+Luego, ordenamos los datos por Id y por fecha.
+
+```{r}
+Actividad_D_lite <- Actividad_D_lite %>% 
+  arrange(Id, Fecha)
+```
+
+
+#### 2. Análisis descriptivo y visualización
+
+En este punto, lo que haremos será observar cuantos usuarios y días hay registrados en los datos y las medidas descriptivas de interés para el análisis
+
+```{r Conteo de usuarios por Identificador}
+unique(Actividad_D_lite$Id)
+```
+
+```{r Conteo de cantidad de días}
+unique(Actividad_D_lite$Fecha)
+```
+
+```{r Resumen descriptivo de la distancia realizada por los usuarios}
+summary(Actividad_D_lite$Distancia)
+```
+
+```{r Resumen descriptivo de las calorías utilizadas por los usuarios}
+summary(Actividad_D_lite$Calorias)
+```
+
+Sobre los usuarios de Fitbit podemos decir, a partir de lo anterior que:
+
+* Caminan en promedio unos 5.5km y queman 2304 kcal calorías por día.
+* Al menos un 25% de los usuarios camina 2.6km y quema 1828 kcal por día
+* Al menos un 75% de los usuarios camina 7.71 km y quema 2793 por día
+* Caminan hasta 28 km y queman hasta 4900 kcal por día
+
+
+A continuación realizaremos las visualizaciones que consideramos más relevantes para las preguntas que motivan el proceso de análisis.
+
+##### Consumo calórico de los usuarios a lo largo del mes estudiado
+
+```{r}
+ggplot(Actividad_D_lite, aes(x=Fecha,y=Calorias,group=Id,color=Id)) +
+  geom_line(show.legend = FALSE) +
+  theme(axis.text.x = element_text(angle=45,vjust=0.5,hjust=0.5)) +
+  labs(title = "Consumo calórico de los usuarios a lo largo de un mes de uso")
+```
+
+Seguidamente obtenemos la misma gráfica pero desglosada por usuario para una mejor visualización
+
+```{r}
+ggplot(Actividad_D_lite,aes(x=Fecha,y=Calorias,group=Id,color=Id)) +
+  geom_line(show.legend = FALSE) +
+  theme(axis.text.x = element_blank()) +
+  facet_wrap(~ Id) +
+  labs(title = "Consumo calórico individual de cada usuario a lo largo de un mes de uso")
+```
+
+Las gráficas anteriores sugieren en la generalidad de los usuarios estudiados una tendencia estable de consumo calórico, con un marcado descenso de actividad física hacia final del mes. Este descenso podría estar relacionado con un descenso de motivación conforme transcurren los días de actividad.
+
+##### Distancia recorrida por los usuarios a lo largo del mes estudiado
+
+```{r}
+ggplot(Actividad_D_lite, aes(x=Fecha,y=Distancia,group=Id,color=Id)) +
+  geom_line(show.legend = FALSE) +
+  theme(axis.text.x = element_text(angle=60,vjust=0.5,hjust=0.5)) +
+  labs(title="Distancia caminada por los usuarios a lo largo de un mes de uso")
+```
+
+A lo largo del mes se observa una cierta periodicidad de altos y bajos a lo largo del mes registrado y a través de los casos registrados, pero con una tendencia estable.
+
+Para una mejor visualización, obtendremos las distancias desgrosadas por usuario.
+
+```{r}
+ggplot(Actividad_D_lite,aes(x=Fecha,y=Distancia,group=Id,color=Id)) +
+  geom_line(show.legend = FALSE) +
+  theme(axis.text.x = element_blank()) +
+  facet_wrap(~ Id) +
+  labs(title="Distancia caminada por cada usuario individual a lo largo de un mes de uso")
+```
+
+En base a lo anterior podemos decir que, en general, los usuarios de Fitbit mantienen un nivel de actividad constante a lo largo del tiempo.
+
+##### ¿Están relacionados el consumo calórico y la distancia que caminan los usuarios?
+
+El fundamento de esta pregunta es intentar descubrir si la quema de calorías se produce a razón de caminar o de ejercicio físico.
+
+```{r}
+ggplot(Actividad_D_lite,aes(x=Distancia,y=Calorias)) +
+  geom_point(aes(color = Calorias)) +
+  scale_color_viridis_c(option = "inferno") +
+  geom_smooth(method = lm)
+```
+
+Sobre este último diagrama observamos una baja correlación positiva, e interpretamos que una porción significativa de la actividad física proviene de caminar, aunque no es estrictamente este el caso ya que, una cierta porción de actividad registrada proviene de otro tipo de actividad física no aeróbica.
+
+
+### B. Segundo set de datos: calorías registradas por hora
+
+#### 1. Orden y limpieza
+
+El set de datos llamado "hourlyCalories_merged.csv" hace un registro intensivo de observaciones de consumo calórico por hora y por día, del cual podemos obtener un valioso conjunto de datos.
+
+Por un lado, podemos obtener el consumo de calorías por hora para intentar comprender qué nivel de actividad registran los usuarios a lo largo del día. Y por el otro, aproximar cómo es el nivel de actividad a lo largo de la semana.
+
+Como primer paso, daremos un vistazo a los datos:
+
+```{r}
+str(read.csv("hourlyCalories_merged.csv"))
+```
+
+Acá nos encontramos con la misma limitación de formato. Con lo cual, repetimos el proceso del set de datos anterior, con la diferencia de que esta vez, separaremos la fecha en diferentes columnas para obtener información útil para nuestro análisis: hora, fecha y día de la semana. A este último, a su vez, lo recodificaremos para que sea más fácil de leer, puesto que R identifica los días de la semana con números, marcando el primer día con un 1.
+
+```{r Cargamos los datos en una variable}
+Calorias_H_D <- read.csv("hourlyCalories_merged.csv")
+str(Calorias_H_D)
+
+Calorias_H_D <- Calorias_H_D %>% 
+  mutate(ActivityHour = mdy_hms(ActivityHour),
+         time=as_hms(ActivityHour),
+         date=as_date(ActivityHour),
+         wday=wday(ActivityHour)) %>% 
+  mutate(Id = factor(Id),wday=factor(wday),wday=recode(wday,
+                                                       "1" = "Domingo",
+                                                       "2" = "Lunes",
+                                                       "3" = "Martes",
+                                                       "4" = "Miercoles",
+                                                       "5" = "Jueves",
+                                                       "6" = "Viernes",
+                                                       "7" = "Sabado"))
+```
+
+Ahora que tenemos los datos apropiadamente formateados, prepararemos algunos data frames simplificados para cotejar las variables que nos interesan:
+
+```{r Consumo calórico versus hora del día}
+Calorias_H <- Calorias_H_D %>% 
+  select(Id, Calories, time)
+```
+
+```{r Renombramos las variables en castellano}
+Calorias_H <- Calorias_H %>% 
+  rename(Calorias=Calories,Hora=time)
+```
+
+```{r Consumo calórico versus día de la semana}
+Calorias_D <- Calorias_H_D %>% 
+  select(Id, Calories, wday) %>% 
+  arrange(wday)
+```
+
+```{r Renombramos las columnas en castellano}
+Calorias_D <- Calorias_D %>% 
+  rename(Calorias = Calories, Dia_semana=wday)
+```
+
+En este punto lo que haremos será agrupar las quemas calóricas que se sucedieron en una misma hora, para poder observar a qué horas se registra mayor cantidad de actividad física entre todos los usuarios.
+
+```{r}
+Calorias_H_lite <- aggregate(Calorias_H$Calorias, by=list(Hora=Calorias_H$Hora), FUN=sum)
+```
+
+Luego, renombraremos esta tabla para leerla mejor.
+
+```{r}
+Calorias_H_lite <- Calorias_H_lite %>% 
+  rename(Calorias_totales=x)
+```
+
+
+Ahora agruparemos las quemas calóricas que se sucedieron en un mismo día de la semana para observar en qué día se observa mayor cantidad física.
+
+```{r}
+Calorias_D_lite <- aggregate(Calorias_D$Calorias, by=list(Dia_de_la_semana=Calorias_D$Dia_semana), FUN=sum)
+```
+
+Al igual que la tabla anterior, la renombraremos.
+
+```{r}
+Calorias_D_lite <- Calorias_D_lite %>% 
+  rename(Calorias_totales=x)
+```
+
+
+#### 2. Análisis descriptivo y visualizaciones
+
+Teniendo las tablas anteriores, procedemos a hacer las gráficas.
+
+##### Consumo calórico versus hora del día
+
+```{r}
+ggplot(Calorias_H_lite,aes(x=Hora,y=Calorias_totales,fill=Calorias_totales)) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  labs(title = "Consumo calórico de los usuarios a lo largo del día") +
+  scale_fill_gradient(low = "yellow",high="red")
+```
+
+De lo anterior inferimos que los usuarios tienden a realizar actividad con mayor frecuencia durante la tarde, más precisamente entre las 12 y las 19 horas.
+
+##### Consumo calórico versus día de la semana
+
+```{r}
+ggplot(Calorias_D_lite,aes(x=Dia_de_la_semana,y=Calorias_totales,fill=Calorias_totales)) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  labs(title = "Consumo calórico de los usuarios a lo largo de la semana") +
+  scale_fill_gradient(low = "yellow",high="red")
+```
+
+A su vez, podemos observar que la mayor cantidad de consumo calórico se registra durante la mitad de la semana, entre los martes y los jueves, dejando los fines de semana con menos actividad física.
+
+
+### C. Tercer set de datos: pasos registrados por hora
+
+Siguiendo la misma secuencia que hicimos con las calorías registradas por hora, cotejaremos los pasos a partir del registro de observaciones llamado "hourlySteps_merged.csv" para corroborar en qué días de la semana se registra mayor distancia caminada y en cuales no. De esta manera podremos aproximar con mayor grado de exactitud si la actividad calórica registrada proviene del acto de caminar o del acto de ejercitar propiamente dicho.
+
+#### 1. Orden y limpieza
+
+```{r}
+str(read.csv("hourlySteps_merged.csv"))
+```
+
+Haremos el mismo proceso de formateo que en el paso B.
+
+```{r Cargamos los datos en una variable}
+Pasos_H_D <- read.csv("hourlySteps_merged.csv")
+str(Pasos_H_D)
+
+Pasos_H_D <- Pasos_H_D %>% 
+  mutate(ActivityHour = mdy_hms(ActivityHour),
+         time=as_hms(ActivityHour),
+         date=as_date(ActivityHour),
+         wday=wday(ActivityHour)) %>% 
+  mutate(Id = factor(Id),wday=factor(wday),wday=recode(wday,
+                                                       "1" = "Domingo",
+                                                       "2" = "Lunes",
+                                                       "3" = "Martes",
+                                                       "4" = "Miercoles",
+                                                       "5" = "Jueves",
+                                                       "6" = "Viernes",
+                                                       "7" = "Sabado"))
+```
+
+Seleccionamos y renombramos:
+
+```{r Pasos versus hora del día}
+Pasos_H <- Pasos_H_D %>% 
+  select(Id, StepTotal, time)
+```
+
+```{r Renombramos las variables en castellano}
+Pasos_H <- Pasos_H %>% 
+  rename(Pasos=StepTotal,Hora=time)
+```
+
+```{r Pasos versus día de la semana}
+Pasos_D <- Pasos_H_D %>% 
+  select(Id, StepTotal, wday) %>% 
+  arrange(wday)
+```
+
+```{r Renombramos las columnas en castellano}
+Pasos_D <- Pasos_D %>% 
+  rename(Pasos = StepTotal, Dia_semana=wday)
+```
+
+Agrupamos los pasos caminados que se dieron en una misma hora por un lado, y en un mismo día por el otro.
+
+```{r}
+Pasos_H_comb <- aggregate(Pasos_H$Pasos, by=list(Hora=Pasos_H$Hora), FUN=sum)
+```
+
+```{r}
+Pasos_D_comb <- aggregate(Pasos_D$Pasos, by=list(Hora=Pasos_D$Dia_semana), FUN=sum)
+```
+
+Para identificar las variables, renombramos:
+
+```{r}
+Pasos_H_comb <- Pasos_H_comb %>% 
+  rename(Pasos_totales=x)
+```
+
+```{r}
+Pasos_D_comb <- Pasos_D_comb %>% 
+  rename(Pasos_totales=x)
+```
+
+#### 2. Análisis descriptivo y visualizaciones
+
+Por último, visualizamos:
+
+```{r Pasos versus hora del día}
+ggplot(Pasos_H_comb,aes(x=Hora,y=Pasos_totales,fill=Pasos_totales)) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  labs(title = "Pasos caminados por los usuarios a lo largo del día") +
+  scale_fill_gradient(low = "yellow",high="darkgreen")
+```
+
+```{r Pasos versus día de la semana}
+ggplot(Pasos_D_comb,aes(x=Hora,y=Pasos_totales,fill=Pasos_totales)) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  labs(title = "Pasos caminados por los usuarios a lo largo de la semana") +
+  scale_fill_gradient(low = "yellow",high="darkgreen")
+```
+
+Los gráficos anteriores parecen indicar que los usuarios son de caminar más durante días de semana, especialmente en horarios laborales entre la mañana y la tarde. Esto podría señalar que mayoritariamente caminan como medio de transporte y no como ejercicio.
+
+
+# Respondiendo a las preguntas
+
+Habiendo hecho un análisis con lo que consideramos los datos de mayor valor, procedemos a contestar las preguntas que motivaron este proceso.
+
+## ¿Cuáles son algunas tendencias en el uso de dispositivos smart?
+
+Las tendencias indican que los usuarios de dispositivos inteligentes son altamente activos físicamente. Tanto a lo largo de la semana y durante cada día, las personas que utlizan dispositivos inteligentes suelen ser constantes en su actividad, aunque a lo largo del mes, principalmente hacia finales de ciclo, suele haber una marcada tendencia a ver su actividad levemente mermada. Esto podría deberse a una pérdida de motivación conforme transcurre el tiempo de actividad.
+
+No obstante, a pesar de los altibajos registrados a lo largo del mes, suelen mantener un nivel constante de actividad. Los datos parecen indicar que realizan sus actividades físicas con mayor intensidad durante la semana, con un mayor nivel particularmente en horario laboral.
+
+Todo parece indicar que existe un cierto nivel de correlación entre las calorías utilizadas, las distancias y los pasos, lo que sustenta la afirmación de que los usuarios caminan mayoritariamente como medio de transporte.
+
+## ¿Cómo se podrían aplicar estas tendencias a los usuarios de Bellabeat?
+
+Estas tendencias podrían aplicarse en función de orientar un proceso de mejora de los relevamientos de datos realizados por los dispositivos y servicios de Bellebeat, poniendo a disposición del usuario la información producida por sus actividades de forma intuitiva, ágil y atractiva en pos de orientar su rutina diaria hacia resultados deseados, en plena concordancia con las normativas vigentes en materia de privacidad y uso responsable de datos.
+
+## ¿Cómo podrían estas tendencias ayudar a influenciar la estrategia de Marketing de Bellabeat?
+
+Estas tendencias ayudan a elegir de manera efectiva un avatar específico del público femenino interesado en el fitness, la nutrición y el bienestar general, el cual al mismo tiempo utiliza dispositivos inteligentes habitualmente ya sea por trabajo y/o por ocio. 
+
+Podría ser de especial interés elaborar estrategias de contenido en redes sociales diseñadas para el público que consume contenido fitness con regularidad, en forma de podcasts, reels, tips nutricionales y similares.
+
+Sin embargo, tampoco se debe destacar la publicidad gráfica en cartelería urbana, haciendo foco principalmente en lugares de alta actividad peatonal, espacios recreativos y deportivos.
+
+El plan de acción sugerido entonces es:
+
+* Contenido y marketing en redes sociales en forma de reels, fotos, y podcasts con contenido fitness
+* Publicidad gráfica con estadísticas reales sobre los resultados obtenidos gracias a Bellabeat
+* Publicidad en buscadores

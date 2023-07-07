@@ -152,3 +152,25 @@ ggplot(Calorias_D_lite,aes(x=Dia_de_la_semana,y=Calorias_totales,fill=Calorias_t
   geom_bar(stat = "identity", show.legend = FALSE) +
   labs(title = "Consumo calórico de los usuarios a lo largo de la semana") +
   scale_fill_gradient(low = "yellow",high="red")
+
+
+#Pasos por hora
+
+
+Pasos_H_D <- read.csv("hourlySteps_merged.csv")
+str(Pasos_H_D)
+
+Pasos_H_D <- Pasos_H_D %>% 
+  mutate(ActivityHour = mdy_hms(ActivityHour),
+         time=as_hms(ActivityHour),
+         date=as_date(ActivityHour),
+         wday=wday(ActivityHour)) %>% 
+  mutate(Id = factor(Id),wday=factor(wday),wday=recode(wday,
+                                                       "1" = "Domingo",
+                                                       "2" = "Lunes",
+                                                       "3" = "Martes",
+                                                       "4" = "Miercoles",
+                                                       "5" = "Jueves",
+                                                       "6" = "Viernes",
+                                                       "7" = "Sabado"))
+str(Pasos_H_D)
